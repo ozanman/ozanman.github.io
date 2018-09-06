@@ -1,0 +1,167 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" />
+    <title>Ozaman</title>
+    <script type="text/javascript" src="phaser.min.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+var config = {
+    type: Phaser.AUTO,
+    width: window.innerWidth,
+    height: window.innerHeight,
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 0 },
+            debug: false
+        }
+    },
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
+};
+
+
+var numb = 0 ;
+var background;
+var likes = [];
+var game = new Phaser.Game(config);
+var isGameStarted = false;
+function preload ()
+{
+    this.load.image('background', 'background.jpg');
+    this.load.image('ozanman', 'ozanman.png');
+    this.load.image('brick','brick.png');
+    this.load.image('paddle','paddle.png');
+    this.load.image('like','like.png');
+}
+
+function create ()
+{
+    background = this.add.image(window.innerWidth / 2, window.innerHeight / 2,'background');
+    background.setDisplaySize(window.innerWidth,window.innerHeight);
+    this.physics.world.setBoundsCollision(true, true, true, false);
+    
+    bricks = this.physics.add.staticGroup();
+    for (let i = 1; i < 4; i++) {
+        for(let j = 0 ; j < 7; j++ ){
+       bricks.create((window.innerWidth / 8) + (j * (window.innerWidth / 8)), i *(100), 'brick');
+                   }
+    }
+    ball = this.physics.add.image(window.innerWidth / 2, window.innerHeight - 100,'ozanman').setCollideWorldBounds(true).setBounce(1);
+    
+    paddle = this.physics.add.image(window.innerWidth / 2, window.innerHeight - 25, 'paddle').setImmovable();
+    
+    this.physics.add.collider(ball, bricks, hitBrick, null, this);
+    this.physics.add.collider(ball, paddle, hitPaddle, null, this);
+
+    
+    
+
+
+
+
+
+}
+
+function update ()
+{
+    cursors = this.input.keyboard.createCursorKeys();
+    if (cursors.left.isDown)
+    {
+        if(isGameStarted == false){
+            ball.setVelocity(-75, -300);
+            isGameStarted = true;
+        }
+        paddle.setVelocityX(-600);
+        
+        
+    }
+    else if (cursors.right.isDown)
+    {
+        if(isGameStarted == false){
+            ball.setVelocity(-75, -300);
+            isGameStarted = true;
+        }
+        paddle.setVelocityX(600);
+        
+        
+    }
+    else
+    {
+        paddle.setVelocityX(0);
+        
+    }
+   
+}
+function resetBall()
+{
+    this.ball.setVelocity(0);
+    this.ball.setPosition(this.paddle.x, 500);
+    this.ball.setData('onPaddle', true);
+}
+
+ function hitBrick(ball, brick)
+{
+
+    brick.disableBody(true, true);
+    console.log(brick.x,brick.y + " eklendi");
+    likes[numb] = this.physics.add.image(brick.x,brick.y,'like');
+    this.physics.add.collider(likes[numb],paddle, hitLike, null, this);
+    likes[numb].setVelocityY(250);
+
+    numb = numb + 1;
+
+
+
+
+    if (bricks.countActive() === 0)
+    {
+
+    }
+}
+function hitLike(like, paddle)
+{
+
+    like.disableBody(true,true);
+
+}
+function hitPaddle(ball, paddle)
+{
+    var diff = 0;
+    
+    if (ball.x < paddle.x)
+    {
+        //  Ball is on the left-hand side of the paddle
+        diff = paddle.x - ball.x;
+        ball.setVelocityX(-5 * diff);
+    }
+    else if (ball.x > paddle.x)
+    {
+        //  Ball is on the right-hand side of the paddle
+        diff = ball.x -paddle.x;
+        ball.setVelocityX(5 * diff);
+    }
+    else
+    {
+        //  Ball is perfectly in the middle
+        //  Add a little random X to stop it bouncing straight up!
+        ball.setVelocityX(2 + Math.random() * 8);
+    }
+}
+
+</script>
+
+</body>
+</html>
