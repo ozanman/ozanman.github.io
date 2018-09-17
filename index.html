@@ -32,15 +32,16 @@ var config = {
     }
 };
 
-
 var numb = 0 ;
+var Velocity = 10;
 var background;
 var likes = [];
 var game = new Phaser.Game(config);
 var isGameStarted = false;
 function preload ()
 {
-    this.load.image('background', 'background.jpg');
+    this.load.image('background', 'background.png');
+    this.load.image('ground', 'ground.png');
     this.load.image('ozanman', 'ozanman.png');
     this.load.image('brick','brick.png');
     this.load.image('paddle','paddle.png');
@@ -49,22 +50,27 @@ function preload ()
 
 function create ()
 {
+
+
     background = this.add.image(window.innerWidth / 2, window.innerHeight / 2,'background');
     background.setDisplaySize(window.innerWidth,window.innerHeight);
     this.physics.world.setBoundsCollision(true, true, true, false);
     
     bricks = this.physics.add.staticGroup();
     for (let i = 1; i < 4; i++) {
-        for(let j = 0 ; j < 7; j++ ){
-       bricks.create((window.innerWidth / 8) + (j * (window.innerWidth / 8)), i *(100), 'brick');
+        for(let j = 0 ; j < 10; j++ ){
+       bricks.create((window.innerWidth / 11) + (j * (window.innerWidth / 11)), i *(100), 'brick');
                    }
     }
     ball = this.physics.add.image(window.innerWidth / 2, window.innerHeight - 100,'ozanman').setCollideWorldBounds(true).setBounce(1);
-    
+    floor = this.physics.add.image(window.innerWidth/2,window.innerHeight ,'ground');
+    floor.setDisplaySize(window.innerWidth,10);
+    floor.setImmovable();
     paddle = this.physics.add.image(window.innerWidth / 2, window.innerHeight - 25, 'paddle').setImmovable();
     
     this.physics.add.collider(ball, bricks, hitBrick, null, this);
     this.physics.add.collider(ball, paddle, hitPaddle, null, this);
+    this.physics.add.collider(ball, floor, gameOver, null, this);
 
     
     
@@ -84,7 +90,7 @@ function update ()
             ball.setVelocity(-75, -300);
             isGameStarted = true;
         }
-        paddle.setVelocityX(-600);
+        paddle.setVelocityX(-600 - Velocity);
         
         
     }
@@ -94,7 +100,7 @@ function update ()
             ball.setVelocity(-75, -300);
             isGameStarted = true;
         }
-        paddle.setVelocityX(600);
+        paddle.setVelocityX(600 + Velocity);
         
         
     }
@@ -111,7 +117,11 @@ function resetBall()
     this.ball.setPosition(this.paddle.x, 500);
     this.ball.setData('onPaddle', true);
 }
-
+function gameOver()
+{
+    console.log("gameover");
+    this.physics.pause();
+}
  function hitBrick(ball, brick)
 {
 
@@ -135,23 +145,25 @@ function hitLike(like, paddle)
 {
 
     like.disableBody(true,true);
+    
 
 }
 function hitPaddle(ball, paddle)
 {
     var diff = 0;
-    
+    Velocity = Velocity + 30;
+    console.log(Velocity);
     if (ball.x < paddle.x)
     {
         //  Ball is on the left-hand side of the paddle
         diff = paddle.x - ball.x;
-        ball.setVelocityX(-5 * diff);
+        ball.setVelocityX((-5 * diff) - Velocity );
     }
     else if (ball.x > paddle.x)
     {
         //  Ball is on the right-hand side of the paddle
         diff = ball.x -paddle.x;
-        ball.setVelocityX(5 * diff);
+        ball.setVelocityX((5 * diff) + Velocity);
     }
     else
     {
